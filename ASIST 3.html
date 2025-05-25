@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistencia Monitoristas de Torre de Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        /* Base styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top to allow scrolling */
+            min-height: 100vh;
+            background: linear-gradient(135deg, #e0f7fa 0%, #bbdefb 100%); /* Light blue gradient */
+            color: #333;
+            overflow-y: auto; /* Enable scrolling */
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            padding: 2.5rem;
+            margin: 2rem;
+            width: 100%;
+            max-width: 900px;
+            box-sizing: border-box;
+        }
+
+        /* Header styles */
+        .header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .logo {
+            width: 150px;
+            height: auto;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #c62828; /* Red */
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #1565c0; /* Dark blue */
+            text-align: center;
+        }
+
+        /* Form styles */
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .label {
+            display: block;
+            margin-bottom: 0.6rem;
+            font-weight: 600;
+            color: #424242;
+            font-size: 0.95rem;
+        }
+
+        .input-field, .select-field {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: 1px solid #b0bec5;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .input-field:focus, .select-field:focus {
+            border-color: #1976d2; /* Blue */
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
+            outline: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            background-color: #1976d2; /* Blue */
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #1565c0; /* Darker blue */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-secondary {
+            background-color: #c62828; /* Red */
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #b71c1c; /* Darker red */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .info-display {
+            background-color: #e3f2fd; /* Light blue */
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            text-align: center;
+            font-size: 1.1rem;
+            color: #1e88e5; /* Medium blue */
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .info-display strong {
+            color: #0d47a1; /* Darkest blue */
+        }
+
+        .message-box {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            display: none; /* Hidden by default */
+        }
+
+        .message-success {
+            background-color: #e8f5e9; /* Light green */
+            color: #2e7d32; /* Dark green */
+            border: 1px solid #4caf50;
+        }
+
+        .message-error {
+            background-color: #ffebee; /* Light red */
+            color: #d32f2f; /* Dark red */
+            border: 1px solid #f44336;
+        }
+
+        /* Table styles */
+        .attendance-table-section {
+            margin-top: 3rem;
+            border-top: 2px solid #e0e0e0;
+            padding-top: 2rem;
+        }
+
+        .attendance-table-section h2 {
+            font-size: 1.8rem;
+            color: #1565c0; /* Dark blue */
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .attendance-table-container {
+            overflow-x: auto; /* Enable horizontal scrolling for small screens */
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px; /* Ensure table is not too narrow */
+        }
+
+        .attendance-table th, .attendance-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .attendance-table th {
+            background-color: #e3f2fd; /* Light blue */
+            color: #1976d2; /* Blue */
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        .attendance-table tbody tr:nth-child(even) {
+            background-color: #f5f5f5; /* Light gray for alternating rows */
+        }
+
+        .attendance-table tbody tr:hover {
+            background-color: #e1f5fe; /* Lighter blue on hover */
+        }
+
+        .report-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            justify-content: center;
+            flex-wrap: wrap; /* Allow wrapping on small screens */
+        }
+        
+        .mr-2 {
+            margin-right: 0.5rem;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            .title {
+                font-size: 1.8rem;
+            }
+            .subtitle {
+                font-size: 1rem;
+            }
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            .button-group, .report-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <img src="https://scontent-dfw5-1.xx.fbcdn.net/v/t39.30808-6/350838029_1417537099034726_6961679260564905215_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=bZ9yVjBrrP0Q7kNvwFFKPxU&_nc_oc=AdlMqzIJFWRaeVvkszIoGSiIRls5trRZFCDoqsZje337-f33b1a4C3pvyTisdBQ00-8&_nc_zt=23&_nc_ht=scontent-dfw5-1.xx&_nc_gid=fzy8ct40MJdu0IdtddOo4w&oh=00_AfKP9De8QUCpNjSlHpOdavu7w-sBNTKNW_E0QVzYYMnhjg&oe=68380BBB"
+                         alt="Logo Estrella Roja" class="logo"
+                         onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/333333?text=Logo+Estrella+Roja';">
+            <h1 class="title">Asistencia Monitoristas de Torre de Control</h1>
+            <p class="subtitle">Registro de entrada y salida para el personal de monitoreo.</p>
+        </header>
+
+        <section class="form-section">
+            <div class="form-group">
+                <label for="employeeNumber" class="label"><i class="fas fa-id-card mr-2"></i>Número de Empleado (Clave):</label>
+                <input type="text" id="employeeNumber" class="input-field" placeholder="Ingrese su clave" required>
+            </div>
+            <div class="form-group">
+                <label for="employeeNameDisplay" class="label"><i class="fas fa-user mr-2"></i>Nombre:</label>
+                <span id="employeeNameDisplay" class="input-field" style="background-color: #f0f0f0; cursor: default;"></span>
+            </div>
+            <div class="form-group">
+                <label for="plant" class="label"><i class="fas fa-industry mr-2"></i>Planta:</label>
+                <select id="plant" class="select-field" required>
+                    <option value="">Seleccione una planta</option>
+                    <option value="Volkswagen">Volkswagen</option>
+                    <option value="CAPU">CAPU</option>
+                </select>
+            </div>
+
+            <div class="info-display">
+                <p><i class="fas fa-clock mr-2"></i>Horario de Registro: <strong id="currentTime">Cargando...</strong></p>
+                <p><i class="fas fa-map-marker-alt mr-2"></i>Ubicación de Registro: <strong id="currentLocationDisplay">Libertad, Puebla</strong></p>
+            </div>
+
+            <div class="button-group">
+                <button id="entryBtn" class="btn btn-primary"><i class="fas fa-sign-in-alt mr-2"></i> Entrada</button>
+                <button id="exitBtn" class="btn btn-secondary"><i class="fas fa-sign-out-alt mr-2"></i> Salida</button>
+            </div>
+
+            <div id="messageBox" class="message-box"></div>
+        </section>
+
+        <section class="attendance-table-section">
+            <h2><i class="fas fa-calendar-alt mr-2"></i>Registros de Asistencia</h2>
+            <div class="form-group">
+                <label for="passwordInput" class="label"><i class="fas fa-key mr-2"></i>Contraseña para Reportes:</label>
+                <input type="password" id="passwordInput" class="input-field" placeholder="Ingrese la contraseña" required>
+            </div>
+            <div class="report-buttons">
+                <button id="viewReportBtn" class="btn btn-primary"><i class="fas fa-eye mr-2"></i> Ver Reporte en Tabla</button>
+                <button id="generatePdfBtn" class="btn btn-primary"><i class="fas fa-file-pdf mr-2"></i> Generar Reporte PDF</button>
+                <button id="emailReportBtn" class="btn btn-secondary"><i class="fas fa-envelope mr-2"></i> Enviar Reporte del Periodo</button>
+            </div>
+            <div class="attendance-table-container">
+                <table id="attendanceTable" class="attendance-table">
+                    <thead>
+                        <tr>
+                            <th>Periodo</th>
+                            <th>No. Empleado</th>
+                            <th>Nombre</th>
+                            <th>Planta</th>
+                            <th>Horario</th>
+                            <th>Horas Laboradas</th>
+                            <th>Estado Jornada</th>
+                            <th>Ubicación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Initialize jsPDF
+        const { jsPDF } = window.jspdf;
+
+        // DOM Elements
+        const employeeNumberInput = document.getElementById('employeeNumber');
+        const employeeNameDisplay = document.getElementById('employeeNameDisplay');
+        const plantSelect = document.getElementById('plant');
+        const currentTimeSpan = document.getElementById('currentTime');
+        const currentLocationDisplay = document.getElementById('currentLocationDisplay');
+        const entryBtn = document.getElementById('entryBtn');
+        const exitBtn = document.getElementById('exitBtn');
+        const messageBox = document.getElementById('messageBox');
+        const attendanceTableBody = document.querySelector('#attendanceTable tbody');
+        const passwordInput = document.getElementById('passwordInput');
+        const viewReportBtn = document.getElementById('viewReportBtn');
+        const generatePdfBtn = document.getElementById('generatePdfBtn');
+        const emailReportBtn = document.getElementById('emailReportBtn');
+
+        // Global variables for attendance data and geolocation
+        let attendanceRecords = [];
+        // Fixed location for registration, as per user's request to stop requesting location permissions
+        const FIXED_REGISTRATION_LOCATION = { latitude: 19.0435, longitude: -98.1772, address: 'Libertad, Puebla' };
+        const REPORT_PASSWORD = "Monitos";
+        // THRESHOLD_DISTANCE_METERS is now 5000 meters (5 km)
+        const THRESHOLD_DISTANCE_METERS = 5000; // Max distance allowed for fixed registration location vs plant (5 km)
+        const LOCATION_MATCH_THRESHOLD_METERS = 50; // Tolerance for comparing entry and exit fixed locations
+        const REQUIRED_WORK_HOURS = 8; // Required hours for a complete workday
+
+        // Predefined list of authorized employees (Clave and Nombre)
+        const authorizedEmployees = {
+            "9677": "Jose Antonio Hernandez Meneses",
+            "11339": "José Lauro Conde Rojas",
+            "11865": "Maria de los Angeles Arroyo Constantino",
+            "12160": "Erika Quecholac Sarmiento",
+            "16084": "Nallely Avila Navarrete",
+            "16282": "Viridiana Ekaterine Romero Romero",
+            "16295": "Jose Maria Saucedo Linares",
+            "17197": "Angel Vazquez Sanchez",
+            "300262": "Jose Roberto Romero Perez",
+            "300636": "Dulce Valeria Fernandez Reyes",
+            "301167": "German Perez Hernandez",
+            "301566": "Mariela Rozalez Pérez",
+            "302110": "Omar Jahir Soto Concha",
+            "302168": "Uriel Martinez Castillo",
+            "302241": "Jose Manuel Reyes Alonso",
+            "302321": "Dahana Arely Campos Vargaas",
+            "302832": "Dulce Maravilla Castillo",
+            "302921": "Enrique Garita Ramirez",
+            "302975": "Daniel Rendon Ramos",
+            "303327": "Oscar Alberto Martinez Torres",
+            "16953": "Mauricio Escartin"
+        };
+
+        // Predefined plant locations
+        const plantLocations = {
+            "Volkswagen": { latitude: 19.0493, longitude: -98.2435 },
+            "CAPU": { latitude: 19.0538, longitude: -98.2045 }
+        };
+
+        // --- Utility Functions ---
+
+        // Function to format date and time
+        function formatDateTime(date) {
+            const options = {
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', second: '2-digit',
+                hour12: false
+            };
+            return new Date(date).toLocaleString('es-MX', options);
+        }
+
+        // Function to get the current bi-weekly period (Monday to Sunday)
+        // This is for assigning a "period" to each record, potentially a fixed pay cycle
+        // Starting from May 24, 2025 (Saturday) as per previous context
+        function getBiWeeklyPeriod(date) {
+            const initialStartDate = new Date('2025-05-24T00:00:00'); // Saturday, May 24, 2025
+            let current = new Date(initialStartDate);
+            let periodStart = null;
+            let periodEnd = null;
+
+            while (current <= date) {
+                periodStart = new Date(current);
+                periodEnd = new Date(current);
+                periodEnd.setDate(periodEnd.getDate() + 13); // 14 days total (0 to 13)
+
+                if (date >= periodStart && date <= periodEnd) {
+                    return { start: periodStart, end: periodEnd };
+                }
+                current.setDate(current.getDate() + 14); // Move to the next 2-week period
+            }
+            // Fallback for dates before initialStartDate
+            return { start: initialStartDate, end: new Date(initialStartDate.getTime() + 13 * 24 * 60 * 60 * 1000) };
+        }
+
+        // Function to display messages
+        function showMessage(message, type = 'success') {
+            messageBox.textContent = message;
+            messageBox.className = `message-box message-${type}`;
+            messageBox.style.display = 'block';
+            setTimeout(() => {
+                messageBox.style.display = 'none';
+            }, 5000);
+        }
+
+        // --- Geolocation Functions ---
+
+        // Haversine formula to calculate distance between two lat/lon points in meters
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; // metres
+            const φ1 = lat1 * Math.PI / 180;
+            const φ2 = lat2 * Math.PI / 180;
+            const Δφ = (lat2 - lat1) * Math.PI / 180;
+            const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                      Math.cos(φ1) * Math.cos(φ2) *
+                      Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+            const d = R * c;
+            return d;
+        }
+
+        // --- Data Management Functions ---
+
+        // Load attendance records from localStorage
+        function loadAttendanceRecords() {
+            const storedRecords = localStorage.getItem('attendanceRecords');
+            if (storedRecords) {
+                attendanceRecords = JSON.parse(storedRecords);
+            }
+        }
+
+        // Save attendance records to localStorage
+        function saveAttendanceRecords() {
+            localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
+        }
+
+        // Function to process raw attendance records into a more structured format for daily summaries
+        function getProcessedAttendanceData(records) {
+            const dailySummaries = {}; // { employeeNumber: {YYYY-MM-DD: { entryTime, exitTime, entryLocation, exitLocation, rawRecordsForDay } } }
+
+            // First pass: Group raw records by employee and date, finding earliest entry and latest exit
+            records.forEach(record => {
+                const dateKey = record.timestamp.substring(0, 10); // YYYY-MM-DD
+                const empKey = record.employeeNumber;
+
+                if (!dailySummaries[empKey]) {
+                    dailySummaries[empKey] = {};
+                }
+                if (!dailySummaries[empKey][dateKey]) {
+                    dailySummaries[empKey][dateKey] = {
+                        employeeNumber: record.employeeNumber,
+                        employeeName: record.employeeName,
+                        plant: record.plant,
+                        date: dateKey,
+                        entryTime: null,
+                        exitTime: null,
+                        entryLocation: null,
+                        entryLatitude: null,
+                        entryLongitude: null,
+                        exitLocation: null,
+                        exitLatitude: null,
+                        exitLongitude: null,
+                        rawRecordsForDay: [] // Store all records for the day to check for any activity
+                    };
+                }
+
+                const currentDailySummary = dailySummaries[empKey][dateKey];
+                currentDailySummary.rawRecordsForDay.push(record); // Add raw record
+
+                if (record.type === 'entrada') {
+                    if (!currentDailySummary.entryTime || new Date(record.timestamp) < new Date(currentDailySummary.entryTime)) {
+                        currentDailySummary.entryTime = record.timestamp;
+                        currentDailySummary.entryLocation = record.location;
+                        currentDailySummary.entryLatitude = record.latitude;
+                        currentDailySummary.entryLongitude = record.longitude;
+                    }
+                } else if (record.type === 'salida') {
+                    if (!currentDailySummary.exitTime || new Date(record.timestamp) > new Date(currentDailySummary.exitTime)) {
+                        currentDailySummary.exitTime = record.timestamp;
+                        currentDailySummary.exitLocation = record.location;
+                        currentDailySummary.exitLatitude = record.latitude;
+                        currentDailySummary.exitLongitude = record.longitude;
+                    }
+                }
+            });
+
+            const finalReportData = [];
+            // Second pass: Calculate hours worked and determine status for each daily summary
+            for (const empNum in dailySummaries) {
+                for (const dateKey in dailySummaries[empNum]) {
+                    const dailyRecord = dailySummaries[empNum][dateKey];
+                    let hoursWorked = 0;
+                    let status = "Jornada Incompleta"; // Default status
+                    let locationWarning = "";
+
+                    if (dailyRecord.entryTime && dailyRecord.exitTime) {
+                        const entryDate = new Date(dailyRecord.entryTime);
+                        const exitDate = new Date(dailyRecord.exitTime);
+                        const diffMs = exitDate - entryDate;
+                        hoursWorked = diffMs / (1000 * 60 * 60); // Convert milliseconds to hours
+
+                        if (hoursWorked >= REQUIRED_WORK_HOURS) {
+                            status = "Jornada Completa";
+                        }
+
+                        // Check for location mismatch only if both entry and exit locations are available
+                        if (dailyRecord.entryLatitude && dailyRecord.entryLongitude &&
+                            dailyRecord.exitLatitude && dailyRecord.exitLongitude) {
+                            const distanceBetweenEntryExit = calculateDistance(
+                                dailyRecord.entryLatitude, dailyRecord.entryLongitude,
+                                dailyRecord.exitLatitude, dailyRecord.exitLongitude
+                            );
+                            if (distanceBetweenEntryExit > LOCATION_MATCH_THRESHOLD_METERS) {
+                                locationWarning = ` (Ubicación de salida difiere de entrada: ${distanceBetweenEntryExit.toFixed(2)}m)`;
+                            }
+                        }
+                    } else if (dailyRecord.rawRecordsForDay.length > 0) { // If there are any records but not a complete pair
+                        if (dailyRecord.entryTime && !dailyRecord.exitTime) {
+                            status = "Entrada Pendiente de Salida";
+                        } else if (!dailyRecord.entryTime && dailyRecord.exitTime) {
+                            status = "Salida sin Entrada Previa";
+                        } else {
+                            status = "Registros Incompletos"; // More general for other odd cases
+                        }
+                    } else {
+                        status = "Sin Registros Válidos"; // No records at all for the day
+                    }
+
+
+                    const recordDate = new Date(dateKey);
+                    const period = getBiWeeklyPeriod(recordDate); // This uses the fixed bi-weekly cycle
+
+                    finalReportData.push({
+                        period: `${formatDate(period.start.toISOString())} - ${formatDate(period.end.toISOString())}`,
+                        employeeNumber: dailyRecord.employeeNumber,
+                        employeeName: dailyRecord.employeeName,
+                        plant: dailyRecord.plant,
+                        date: dailyRecord.date,
+                        // Combine entry and exit times for display
+                        timeRange: `${dailyRecord.entryTime ? formatDateTime(dailyRecord.entryTime) : 'N/A'} - ${dailyRecord.exitTime ? formatDateTime(dailyRecord.exitTime) : 'N/A'}`,
+                        location: `${dailyRecord.entryLocation || 'N/A'}${locationWarning}`, // Show entry location + warning if any
+                        hoursWorked: hoursWorked > 0 ? hoursWorked.toFixed(2) : '0.00', // Format to 2 decimal places
+                        status: status,
+                        // Keep original lat/lon for detailed reports if needed, though not directly displayed in this summary table
+                        entryLatitude: dailyRecord.entryLatitude,
+                        entryLongitude: dailyRecord.entryLongitude,
+                        exitLatitude: dailyRecord.exitLatitude,
+                        exitLongitude: dailyRecord.exitLongitude
+                    });
+                }
+            }
+            // Sort the final report data by employee number and then by date
+            finalReportData.sort((a, b) => {
+                if (a.employeeNumber !== b.employeeNumber) {
+                    return a.employeeNumber.localeCompare(b.employeeNumber);
+                }
+                return new Date(a.date) - new Date(b.date);
+            });
+
+            return finalReportData;
+        }
+
+        // New function to generate the 14-day attendance summary (rolling window)
+        function generate14DayAttendanceSummary(records) {
+            const summary = {}; // { employeeNumber: { employeeName, dates: {YYYY-MM-DD: 'A'/'F'/'D' } } }
+            const allDatesInRollingPeriod = [];
+
+            // Determine the rolling 14-day period ending today
+            const now = new Date();
+            // Set 'now' to start of today to ensure consistent day calculation
+            now.setHours(0, 0, 0, 0);
+
+            // Start date is 13 days ago from today (inclusive of today means today - 13 days)
+            let startDate = new Date(now);
+            startDate.setDate(now.getDate() - 13);
+
+            for (let i = 0; i < 14; i++) {
+                const date = new Date(startDate);
+                date.setDate(startDate.getDate() + i);
+                allDatesInRollingPeriod.push(date.toISOString().substring(0, 10)); // YYYY-MM-DD
+            }
+
+            // Initialize summary for all authorized employees
+            for (const empNum in authorizedEmployees) {
+                summary[empNum] = {
+                    employeeNumber: empNum,
+                    employeeName: authorizedEmployees[empNum],
+                    dates: {}
+                };
+                allDatesInRollingPeriod.forEach(dateKey => {
+                    summary[empNum].dates[dateKey] = 'F'; // Default to Falta
+                });
+            }
+
+            // Populate attendance based on records within the rolling 14-day period
+            records.forEach(record => {
+                const recordDateKey = record.timestamp.substring(0, 10);
+                const empNum = record.employeeNumber;
+
+                if (summary[empNum] && allDatesInRollingPeriod.includes(recordDateKey)) {
+                    // If there's any record (entrada or salida) for the day, mark as Asistencia
+                    summary[empNum].dates[recordDateKey] = 'A';
+                }
+            });
+
+            // Apply "Day Off" logic: if no attendance and it's a Sunday, mark as 'D'
+            allDatesInRollingPeriod.forEach(dateKey => {
+                const date = new Date(dateKey + 'T00:00:00'); // Ensure UTC for consistent day of week
+                if (date.getDay() === 0) { // Sunday is 0
+                    for (const empNum in summary) {
+                        if (summary[empNum].dates[dateKey] === 'F') { // Only change if already 'F' (no attendance)
+                            summary[empNum].dates[dateKey] = 'D';
+                        }
+                    }
+                }
+            });
+
+            // Convert to array for autoTable
+            const summaryTableData = [];
+            for (const empNum in summary) {
+                const row = [summary[empNum].employeeNumber, summary[empNum].employeeName];
+                allDatesInRollingPeriod.forEach(dateKey => {
+                    row.push(summary[empNum].dates[dateKey]);
+                });
+                summaryTableData.push(row);
+            }
+
+            const headers = ["No. Empleado", "Nombre"].concat(
+                allDatesInRollingPeriod.map(dateKey => {
+                    const date = new Date(dateKey);
+                    // Format date for header as DD/MM
+                    return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}`;
+                })
+            );
+
+            return { headers, data: summaryTableData, allDatesInPeriod: allDatesInRollingPeriod };
+        }
+
+        // Function to get daily entry/exit counts for the summary
+        function getDailyEntryExitCounts(records) {
+            const dailyCounts = {}; // {YYYY-MM-DD: { entradas: N, salidas: M } }
+
+            records.forEach(record => {
+                const dateKey = record.timestamp.substring(0, 10);
+                if (!dailyCounts[dateKey]) {
+                    dailyCounts[dateKey] = { entradas: 0, salidas: 0 };
+                }
+                if (record.type === 'entrada') {
+                    dailyCounts[dateKey].entradas++;
+                } else if (record.type === 'salida') {
+                    dailyCounts[dateKey].salidas++;
+                }
+            });
+
+            // Sort by date
+            const sortedDates = Object.keys(dailyCounts).sort();
+            const result = [];
+            sortedDates.forEach(date => {
+                result.push({
+                    date: date,
+                    entradas: dailyCounts[date].entradas,
+                    salidas: dailyCounts[date].salidas
+                });
+            });
+            return result;
+        }
+
+        // Render attendance table
+        function renderAttendanceTable() {
+            attendanceTableBody.innerHTML = ''; // Clear existing rows
+            const processedData = getProcessedAttendanceData(attendanceRecords);
+
+            processedData.forEach(record => {
+                const row = attendanceTableBody.insertRow();
+                row.insertCell().textContent = record.period;
+                row.insertCell().textContent = record.employeeNumber;
+                row.insertCell().textContent = record.employeeName;
+                row.insertCell().textContent = record.plant;
+                row.insertCell().textContent = record.timeRange; // Horario
+                row.insertCell().textContent = record.hoursWorked; // Horas Laboradas
+                row.insertCell().textContent = record.status; // Estado Jornada
+                row.insertCell().textContent = record.location; // Ubicación
+            });
+        }
+
+        // Function to format date as DD/MM/YYYY
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
+        // --- Event Handlers ---
+
+        // Autocomplete employee name based on employee number
+        employeeNumberInput.addEventListener('input', () => {
+            const employeeNumber = employeeNumberInput.value.trim();
+            const employeeName = authorizedEmployees[employeeNumber];
+            if (employeeName) {
+                employeeNameDisplay.textContent = employeeName;
+                employeeNameDisplay.style.color = '#333'; // Reset color
+            } else {
+                employeeNameDisplay.textContent = "Clave no válida";
+                employeeNameDisplay.style.color = '#c62828'; // Red for invalid
+            }
+        });
+
+        // Function to get the last attendance record for a specific employee
+        function getLastRecordForEmployee(employeeNumber) {
+            const employeeRecords = attendanceRecords.filter(record => record.employeeNumber === employeeNumber);
+            if (employeeRecords.length > 0) {
+                // Sort by timestamp to get the latest record
+                employeeRecords.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                return employeeRecords[0];
+            }
+            return null;
+        }
+
+        // Handle attendance recording (Entry/Exit)
+        function recordAttendance(type) {
+            const employeeNumber = employeeNumberInput.value.trim();
+            const employeeName = authorizedEmployees[employeeNumber]; // Get name from authorized list
+            const plant = plantSelect.value;
+
+            if (!employeeNumber || !employeeName || plant === "") { // Check if plant is selected
+                showMessage("Por favor, ingrese una clave válida y seleccione una Planta.", 'error');
+                return;
+            }
+
+            // Check for alternating entries/exits
+            const lastRecord = getLastRecordForEmployee(employeeNumber);
+            if (!lastRecord) {
+                if (type === 'salida') {
+                    showMessage("Para registrar una salida, debe registrar una entrada primero para este empleado.", 'error');
+                    return;
+                }
+            } else if (lastRecord.type === type) {
+                showMessage(`Ya tienes una ${type} registrada. Debes registrar una ${type === 'entrada' ? 'salida' : 'entrada'} para este empleado.`, 'error');
+                return;
+            }
+
+            // Location validation against the selected plant (using the fixed registration location)
+            const targetPlantLocation = plantLocations[plant];
+            if (!targetPlantLocation) {
+                showMessage("La planta seleccionada no tiene una ubicación definida para validación.", 'error');
+                return;
+            }
+
+            const distanceToPlant = calculateDistance(
+                FIXED_REGISTRATION_LOCATION.latitude, FIXED_REGISTRATION_LOCATION.longitude,
+                targetPlantLocation.latitude, targetPlantLocation.longitude
+            );
+
+            if (distanceToPlant > THRESHOLD_DISTANCE_METERS) {
+                showMessage(`No se puede registrar. La ubicación de registro (fija) está a ${distanceToPlant.toFixed(2)} metros de ${plant}. Debes estar a menos de ${THRESHOLD_DISTANCE_METERS} metros de la ubicación de la planta.`, 'error');
+                return;
+            }
+
+            // --- Specific check for 'salida' location match with 'entrada' ---
+            if (type === 'salida' && lastRecord && lastRecord.type === 'entrada') {
+                const distanceToLastEntry = calculateDistance(
+                    FIXED_REGISTRATION_LOCATION.latitude, FIXED_REGISTRATION_LOCATION.longitude,
+                    lastRecord.latitude, lastRecord.longitude
+                );
+
+                if (distanceToLastEntry > LOCATION_MATCH_THRESHOLD_METERS) {
+                    showMessage(`Advertencia: La ubicación de salida (Lat: ${FIXED_REGISTRATION_LOCATION.latitude.toFixed(4)}, Lon: ${FIXED_REGISTRATION_LOCATION.longitude.toFixed(4)}) no coincide con la ubicación de su última entrada (Lat: ${lastRecord.latitude.toFixed(4)}, Lon: ${lastRecord.longitude.toFixed(4)}). Diferencia: ${distanceToLastEntry.toFixed(2)} metros.`, 'error');
+                }
+            }
+            // --- End of specific check ---
+
+            const now = new Date();
+            const period = getBiWeeklyPeriod(now);
+            const record = {
+                employeeNumber,
+                employeeName,
+                plant,
+                timestamp: now.toISOString(),
+                type,
+                location: FIXED_REGISTRATION_LOCATION.address, // Store fixed address string
+                latitude: FIXED_REGISTRATION_LOCATION.latitude,
+                longitude: FIXED_REGISTRATION_LOCATION.longitude,
+                periodStartDate: period.start.toISOString(),
+                periodEndDate: period.end.toISOString()
+            };
+
+            attendanceRecords.push(record);
+            saveAttendanceRecords();
+            renderAttendanceTable();
+            showMessage(`Registro de ${type} exitoso para ${employeeName} en ${plant}. Distancia a la planta: ${distanceToPlant.toFixed(2)} metros.`, 'success');
+
+            // Clear form fields after successful entry/exit
+            employeeNumberInput.value = '';
+            employeeNameDisplay.textContent = '';
+            plantSelect.value = '';
+        }
+
+        entryBtn.addEventListener('click', () => recordAttendance('entrada'));
+        exitBtn.addEventListener('click', () => recordAttendance('salida'));
+
+        // Update current time every second
+        setInterval(() => {
+            currentTimeSpan.textContent = formatDateTime(new Date());
+        }, 1000);
+
+        // --- Report Generation ---
+
+        // Function to check password before proceeding with report actions
+        function checkPassword(callback) {
+            const enteredPassword = passwordInput.value.trim();
+            if (enteredPassword === REPORT_PASSWORD) {
+                callback();
+            } else {
+                showMessage("Contraseña incorrecta. Por favor, intente de nuevo.", 'error');
+                passwordInput.value = '';
+            }
+        }
+
+        // View Report in Table (simply re-renders the table)
+        viewReportBtn.addEventListener('click', () => {
+            checkPassword(() => {
+                if (attendanceRecords.length === 0) {
+                    showMessage("No hay registros de asistencia para mostrar.", 'error');
+                    return;
+                }
+                renderAttendanceTable();
+                showMessage("Tabla de asistencia actualizada.", 'success');
+            });
+        });
+
+        // Generate PDF report
+        generatePdfBtn.addEventListener('click', () => {
+            checkPassword(() => {
+                if (attendanceRecords.length === 0) {
+                    showMessage("No hay registros de asistencia para generar el reporte.", 'error');
+                    return;
+                }
+
+                const doc = new jsPDF();
+                let y = 20;
+
+                doc.setFontSize(18);
+                doc.setTextColor(204, 0, 0); // Red
+                doc.text("Reporte de Asistencia Monitoristas", 105, y, { align: "center" });
+                y += 10;
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0); // Black
+                doc.text("Generado el: " + formatDateTime(new Date()), 105, y, { align: "center" });
+                y += 20;
+
+                // --- Detailed Attendance Table ---
+                doc.setFontSize(16);
+                doc.setTextColor(25, 118, 210);
+                doc.text("Registros Detallados", 15, y);
+                y += 10;
+
+                const processedData = getProcessedAttendanceData(attendanceRecords);
+                const detailedHeaders = ["Periodo", "No. Empleado", "Nombre", "Planta", "Horario", "Horas Laboradas", "Estado Jornada", "Ubicación"];
+                const detailedData = processedData.map(record => [
+                    record.period,
+                    record.employeeNumber,
+                    record.employeeName,
+                    record.plant,
+                    record.timeRange,
+                    record.hoursWorked,
+                    record.status,
+                    record.location
+                ]);
+
+                doc.autoTable({
+                    startY: y + 5,
+                    head: [detailedHeaders],
+                    body: detailedData,
+                    theme: 'grid',
+                    styles: {
+                        fontSize: 8,
+                        cellPadding: 2,
+                        halign: 'center',
+                        valign: 'middle',
+                    },
+                    headStyles: {
+                        fillColor: [227, 242, 253],
+                        textColor: [25, 118, 210],
+                        fontStyle: 'bold'
+                    },
+                    alternateRowStyles: {
+                        fillColor: [245, 245, 245]
+                    },
+                    didDrawPage: function (data) {
+                        doc.setFontSize(10);
+                        doc.setTextColor(150);
+                        doc.text('Página ' + doc.internal.getNumberOfPages(), data.settings.margin.left, doc.internal.pageSize.height - 10);
+                    }
+                });
+                y = doc.autoTable.previous.finalY + 15; // Space after detailed table
+
+                // --- Daily Entry/Exit Summary ---
+                if (y > 250) { // Check if new page is needed for summary
+                    doc.addPage();
+                    y = 20;
+                }
+                doc.setFontSize(16);
+                doc.setTextColor(25, 118, 210);
+                doc.text("Resumen Diario de Entradas y Salidas", 15, y);
+                y += 10;
+
+                const dailyCounts = getDailyEntryExitCounts(attendanceRecords);
+                const dailySummaryHeaders = ["Fecha", "Entradas Totales", "Salidas Totales"];
+                const dailySummaryData = dailyCounts.map(item => [
+                    formatDate(item.date),
+                    item.entradas,
+                    item.salidas
+                ]);
+
+                doc.autoTable({
+                    startY: y + 5,
+                    head: [dailySummaryHeaders],
+                    body: dailySummaryData,
+                    theme: 'grid',
+                    styles: {
+                        fontSize: 9,
+                        cellPadding: 3,
+                        halign: 'center',
+                        valign: 'middle',
+                    },
+                    headStyles: {
+                        fillColor: [227, 242, 253],
+                        textColor: [25, 118, 210],
+                        fontStyle: 'bold'
+                    },
+                    alternateRowStyles: {
+                        fillColor: [245, 245, 245]
+                    },
+                    didDrawPage: function (data) {
+                        doc.setFontSize(10);
+                        doc.setTextColor(150);
+                        doc.text('Página ' + doc.internal.getNumberOfPages(), data.settings.margin.left, doc.internal.pageSize.height - 10);
+                    }
+                });
+                y = doc.autoTable.previous.finalY + 15; // Space after daily summary
+
+                // --- 14-Day Attendance Summary (Rolling Window) ---
+                if (y > 200) { // Check if new page is needed for 14-day summary
+                    doc.addPage();
+                    y = 20;
+                }
+                doc.setFontSize(16);
+                doc.setTextColor(25, 118, 210);
+                doc.text("Resumen de Asistencia (Últimos 14 Días)", 15, y);
+                y += 10;
+
+                const fourteenDaySummary = generate14DayAttendanceSummary(attendanceRecords);
+
+                doc.autoTable({
+                    startY: y + 5,
+                    head: [fourteenDaySummary.headers],
+                    body: fourteenDaySummary.data,
+                    theme: 'grid',
+                    styles: {
+                        fontSize: 8,
+                        cellPadding: 2,
+                        halign: 'center',
+                        valign: 'middle',
+                    },
+                    headStyles: {
+                        fillColor: [227, 242, 253],
+                        textColor: [25, 118, 210],
+                        fontStyle: 'bold'
+                    },
+                    alternateRowStyles: {
+                        fillColor: [245, 245, 245]
+                    },
+                    didDrawPage: function (data) {
+                        doc.setFontSize(10);
+                        doc.setTextColor(150);
+                        doc.text('Página ' + doc.internal.getNumberOfPages(), data.settings.margin.left, doc.internal.pageSize.height - 10);
+                    }
+                });
+
+                doc.save("Reporte_Asistencia_Monitoristas.pdf");
+                showMessage("Reporte PDF generado exitosamente.", 'success');
+            });
+        });
+
+        // Send email report (simulated via mailto link)
+        emailReportBtn.addEventListener('click', () => {
+            checkPassword(() => {
+                const now = new Date();
+                const currentPeriod = getBiWeeklyPeriod(now); // This is still the fixed bi-weekly period
+                const currentPeriodKey = `${formatDate(currentPeriod.start)} - ${formatDate(currentPeriod.end)}`;
+
+                let emailBody = `Reporte de Asistencia para el Periodo: ${currentPeriodKey}\n\n`;
+
+                // --- Detailed Attendance Data for Email ---
+                emailBody += "--- Registros Detallados ---\n\n";
+                const processedData = getProcessedAttendanceData(attendanceRecords);
+                if (processedData.length === 0) {
+                    emailBody += "No hay registros detallados para este periodo.\n\n";
+                } else {
+                    processedData.forEach(record => {
+                        emailBody += `  - Empleado: ${record.employeeName} (${record.employeeNumber})\n`;
+                        emailBody += `    Planta: ${record.plant}\n`;
+                        emailBody += `    Horario: ${record.timeRange}\n`;
+                        emailBody += `    Horas Laboradas: ${record.hoursWorked}\n`;
+                        emailBody += `    Estado Jornada: ${record.status}\n`;
+                        emailBody += `    Ubicación: ${record.location}\n\n`;
+                    });
+                }
+
+                // --- Daily Entry/Exit Summary for Email ---
+                emailBody += "\n--- Resumen Diario de Entradas y Salidas ---\n\n";
+                const dailyCounts = getDailyEntryExitCounts(attendanceRecords);
+                if (dailyCounts.length === 0) {
+                    emailBody += "No hay resumen diario para este periodo.\n\n";
+                } else {
+                    dailyCounts.forEach(item => {
+                        emailBody += `  - Fecha: ${formatDate(item.date)}\n`;
+                        emailBody += `    Entradas Totales: ${item.entradas}\n`;
+                        emailBody += `    Salidas Totales: ${item.salidas}\n\n`;
+                    });
+                }
+
+                // --- 14-Day Attendance Summary (Rolling Window) for Email ---
+                emailBody += "\n--- Resumen de Asistencia (Últimos 14 Días) ---\n\n";
+                const fourteenDaySummary = generate14DayAttendanceSummary(attendanceRecords);
+                if (fourteenDaySummary.data.length === 0) {
+                    emailBody += "No hay resumen de los últimos 14 días.\n\n";
+                } else {
+                    emailBody += "  " + fourteenDaySummary.headers.join("\t") + "\n"; // Tab-separated header
+                    fourteenDaySummary.data.forEach(row => {
+                        emailBody += "  " + row.join("\t") + "\n"; // Tab-separated data
+                    });
+                    emailBody += "\n";
+                }
+
+
+                const recipients = "mauricio.escartin@estrellaroja.com.mx,lauro.conde@estrellaroja.com.mx";
+                const subject = encodeURIComponent(`Reporte de Asistencia ${currentPeriodKey}`);
+                const body = encodeURIComponent(emailBody);
+
+                const mailtoLink = `mailto:${recipients}?subject=${subject}&body=${body}`;
+                window.location.href = mailtoLink;
+
+                localStorage.setItem('lastEmailSentPeriod', currentPeriodKey);
+                showMessage(`Se ha preparado el correo electrónico para el periodo ${currentPeriodKey}. Por favor, envíelo desde su cliente de correo.`, 'success');
+            });
+        });
+
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAttendanceRecords();
+            currentTimeSpan.textContent = formatDateTime(new Date());
+            currentLocationDisplay.textContent = `${FIXED_REGISTRATION_LOCATION.address}`; // Set fixed location display
+        });
+    </script>
+</body>
+</html>
